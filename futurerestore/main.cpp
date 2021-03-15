@@ -60,15 +60,12 @@ static struct option longopts[] = {
 #define FLAG_IS_PWN_DFU         1 << 5
 
 void cmd_help(){
-    printf("Usage: futurerestore [OPTIONS] iPSW\n");
-    printf("Allows restoring to non-matching firmware with custom SEP+baseband\n");
-    printf("\nGeneral options:\n");
-    printf("  -t, --apticket PATH\t\tSigning tickets used for restoring\n");
-    printf("  -u, --update\t\t\tUpdate instead of erase install (requires appropriate APTicket)\n");
-    printf("              \t\t\tDO NOT use this parameter, if you update from jailbroken firmware!\n");
-    printf("  -w, --wait\t\t\tKeep rebooting until ApNonce matches APTicket (ApNonce collision, unreliable)\n");
-    printf("  -d, --debug\t\t\tShow all code, use to save a log for debug testing\n");
-    printf("  -e, --exit-recovery\t\tExit recovery mode and quit\n");
+    printf("\nTùy chọn LiGoRa:\n");
+    printf("  -t, --SHSH\n");
+    printf("  -u, --update\n");
+    printf("  -w, --wait\n");
+    printf("  -d, --debug\n");
+
     
 #ifdef HAVE_LIBIPATCHER
     printf("\nOptions for downgrading with Odysseus:\n");
@@ -76,17 +73,12 @@ void cmd_help(){
     printf("      --just-boot=\"-v\"\t\tTethered booting the device from pwned DFU mode. You can optionally set boot-args\n");
 #endif
         
-    printf("\nOptions for SEP:\n");
-    printf("      --latest-sep\t\tUse latest signed SEP instead of manually specifying one (may cause bad restore)\n");
-    printf("  -s, --sep PATH\t\tSEP to be flashed\n");
-    printf("  -m, --sep-manifest PATH\tBuildManifest for requesting SEP ticket\n");
-        
-    printf("\nOptions for baseband:\n");
-    printf("      --latest-baseband\t\tUse latest signed baseband instead of manually specifying one (may cause bad restore)\n");
-    printf("  -b, --baseband PATH\t\tBaseband to be flashed\n");
-    printf("  -p, --baseband-manifest PATH\tBuildManifest for requesting baseband ticket\n");
-    printf("      --no-baseband\t\tSkip checks and don't flash baseband\n");
-    printf("                   \t\tOnly use this for device without a baseband (eg. iPod touch or some Wi-Fi only iPads)\n\n");
+    printf("  -s, --sep PATH\n");
+    printf("  -m, --sep-manifest PATH\n");
+  
+    printf("  -b, --baseband PATH\n");
+    printf("  -p, --baseband-manifest PATH\n");
+    printf("  -e, --exit-recovery\n");
 }
 
 using namespace std;
@@ -99,14 +91,16 @@ int main_r(int argc, const char * argv[]) {
         SetConsoleMode(handle, termFlags | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
 #endif
     int err=0;
-    printf("Version: " VERSION_COMMIT_SHA " - " VERSION_COMMIT_COUNT "\n");
-    printf("%s\n",tihmstar::img4tool::version());
+    printf("LiGoRa\n");
+    printf("Version: 2.0\n");
+    printf("%s\n",tihmstar::img4tool);
+    printf("by Hoa Huynh\n");
 #ifdef HAVE_LIBIPATCHER
     printf("%s\n",libipatcher::version());
     printf("Odysseus for 32-bit support: yes\n");
     printf("Odysseus for 64-bit support: %s\n",(libipatcher::has64bitSupport() ? "yes" : "no"));
 #else
-    printf("Odysseus support: no\n");
+  
 #endif
 
     int optindex = 0;
@@ -193,11 +187,11 @@ int main_r(int argc, const char * argv[]) {
         
         ipsw = argv[0];
     }else if (argc == optind && flags & FLAG_WAIT) {
-        info("User requested to only wait for ApNonce to match, but not for actually restoring\n");
+        info("Người dùng yêu cầu chỉ đợi ApNonce khớp, nhưng không thực sự khôi phục\n");
     }else if (exitRecovery){
-        info("Exiting from recovery mode to normal mode\n");
+        info("Thoát từ chế độ khôi phục sang chế độ bình thường\n");
     }else{
-        error("argument parsing failed! agrc=%d optind=%d\n",argc,optind);
+        error("phân tích cú pháp đối số không thành công! agrc=%d optind=%d\n",argc,optind);
         if (idevicerestore_debug){
             for (int i=0; i<argc; i++) {
                 printf("argv[%d]=%s\n",i,argv[i]);
@@ -207,14 +201,14 @@ int main_r(int argc, const char * argv[]) {
     }
     
     futurerestore client(flags & FLAG_UPDATE, flags & FLAG_IS_PWN_DFU);
-    retassure(client.init(),"can't init, no device found\n");
+    retassure(client.init(),"không tìm thấy thiết bị\n");
     
-    printf("futurerestore init done\n");
+    printf("LiGoRa xong\n");
     retassure(!bootargs || (flags & FLAG_IS_PWN_DFU),"--just-boot requires --use-pwndfu\n");
     
     if (exitRecovery) {
         client.exitRecovery();
-        info("Done\n");
+        info("Hoàn tất\n");
         return 0;
     }
     
@@ -229,13 +223,13 @@ int main_r(int argc, const char * argv[]) {
             )) {
             
             if (!(flags & FLAG_WAIT) || ipsw){
-                error("missing argument\n");
+                error("Lập luận thiếu\n");
                 cmd_help();
                 err = -2;
             }else{
                 client.putDeviceIntoRecovery();
                 client.waitForNonce();
-                info("Done\n");
+                info("Xong\n");
             }
             goto error;
         }
@@ -246,7 +240,7 @@ int main_r(int argc, const char * argv[]) {
             devVals.deviceBoard = (char*)client.getDeviceBoardNoCopy();
             
             if (flags & FLAG_LATEST_SEP){
-                info("user specified to use latest signed SEP (WARNING, THIS CAN CAUSE A NON-WORKING RESTORE)\n");
+                info("Người dùng sử dụng Sep mới nhất (có thể không khoio phục đượcE)\n");
                 client.loadLatestSep();
             }else if (!client.is32bit()){
                 client.loadSep(sepPath);
@@ -270,20 +264,20 @@ int main_r(int argc, const char * argv[]) {
                 printf("\n");
             }else{
                 if (flags & FLAG_LATEST_BASEBAND){
-                    info("user specified to use latest signed baseband (WARNING, THIS CAN CAUSE A NON-WORKING RESTORE)\n");
+                    info("Người dùng sử dụng baseband mới nhất (có thể không khoio phục được)\n");
                     client.loadLatestBaseband();
                 }else{
                     client.setBasebandPath(basebandPath);
                     client.setBasebandManifestPath(basebandManifestPath);
-                    printf("Did set SEP+baseband path and firmware\n");
+                    printf("Sep+baseband vá firmware\n");
                 }
                 
                 versVals.basebandMode = kBasebandModeOnlyBaseband;
                 if (!(devVals.bbgcid = client.getBasebandGoldCertIDFromDevice())){
-                    printf("[WARNING] using tsschecker's fallback to get BasebandGoldCertID. This might result in invalid baseband signing status information\n");
+                    printf("[Cảnh báo] sử dụng dự phòng của tsschecker để lấy BasebandGoldCertID. Điều này có thể dẫn đến thông tin trạng thái ký băng tần cơ sở không hợp lệ\n");
                 }
                 if (!(isBasebandSigned = isManifestSignedForDevice(client.basebandManifestPath(), &devVals, &versVals))) {
-                    reterror("baseband firmware is NOT being signed!\n");
+                    reterror("baseband đã khóa Sign!\n");
                 }
             }
         }
@@ -294,7 +288,7 @@ int main_r(int argc, const char * argv[]) {
         }
     } catch (int error) {
         err = error;
-        printf("[Error] Fail code=%d\n",err);
+        printf("[Lỗi] code=%d\n",err);
         goto error;
     }
     
@@ -303,15 +297,15 @@ int main_r(int argc, const char * argv[]) {
             client.doJustBoot(ipsw,bootargs);
         else
             client.doRestore(ipsw);
-        printf("Done: restoring succeeded!\n");
+        printf("Khôi phục thành công\n");
     } catch (tihmstar::exception &e) {
         e.dump();
-        printf("Done: restoring failed!\n");
+        printf("Khôi phục không thành công\n");
     }
     
 error:
     if (err){
-        printf("Failed with error code=%d\n",err);
+        printf("Không thành công mã lỗi=%d\n",err);
     }
     return err;
 #undef reterror
@@ -324,7 +318,7 @@ int main(int argc, const char * argv[]) {
     try {
         return main_r(argc, argv);
     } catch (tihmstar::exception &e) {
-        printf("%s: failed with exception:\n",PACKAGE_NAME);
+        printf("%s: Thất bại:\n",PACKAGE_NAME);
         e.dump();
         return e.code();
     }
