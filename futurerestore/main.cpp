@@ -93,7 +93,7 @@ int main_r(int argc, const char * argv[]) {
     int err=0;
     printf("LiGoRa\n");
     printf("Version: 2.0\n");
-    printf("%s\n",tihmstar::img4tool);
+    printf("%s\n",tihmstar::img4tool::version());
     printf("by Hoa Huynh\n");
 #ifdef HAVE_LIBIPATCHER
     printf("%s\n",libipatcher::version());
